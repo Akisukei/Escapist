@@ -5,6 +5,9 @@
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 
+/// indicates parameter will be modified for us
+#define OUT
+
 // Sets default values for this component's properties
 UGrabber::UGrabber()
 {
@@ -30,20 +33,41 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	// note: get method changes the parameter variables for you
+	
 	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
-		PlayerViewPointLocation,
-		PlayerViewPointRotation
+		OUT PlayerViewPointLocation,
+		OUT PlayerViewPointRotation
 	);
 
-	// test
 	/*UE_LOG(LogTemp, Warning, TEXT("Location: %s, Rotation: %s"),
 		*PlayerViewPointLocation.ToString(),
 		*PlayerViewPointRotation.ToString()
 	);*/
 
-	// The end of line tracer
+	/// Draw a red trace in world to visualize grab distance
 	FVector LineTraceEnd = PlayerViewPointLocation + PlayerViewPointRotation.Vector() * GrabReach;
+	/// PlayerViewPointLocation is where player is and where it starts
+	/// PlayerViewPointRotation points which angle it will come out of
+	/// GrabReach is how long in cm will the reach be
 	DrawDebugLine(GetWorld(), PlayerViewPointLocation, LineTraceEnd, FColor(255, 0, 0), false, 0.f, 0.f, 10.f);
+	/// Don't want to persist line so set false so it will recreate every tick
+	/// Life time is not relevant if lines do not persist
+
+	/// Line-trace AKA Ray-casting out to reach distance
+	FHitResult Hit;
+	GetWorld()->LineTraceSingleByObjectType(
+		OUT Hit,
+		PlayerViewPointLocation,
+		LineTraceEnd,
+		FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody),
+		FCollisionQueryParams(FName(TEXT("")), false, GetOwner())
+	);
+	/// Read params by hovering over
+	/// reminder :: is used to extract value from enum
+	/// InTraceComplex is visibility collision view mode, false is like player collision
+
+	AActor* HitActor = Hit.GetActor();
+	/// if HitActor has something
+	if (HitActor) { UE_LOG(LogTemp, Warning, TEXT("Actor hit: %s"), *(HitActor->GetName())); }
 }
 
