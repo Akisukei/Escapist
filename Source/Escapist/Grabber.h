@@ -29,20 +29,21 @@ public:
 
 private:
 
-	FVector PlayerViewPointLocation;
-	FRotator PlayerViewPointRotation;
+	UPROPERTY(EditAnywhere)
 	float GrabReach = 100.f; /// in cm
 
-	/// dont know if handle is only available at start up
-	UPhysicsHandleComponent* PhysicsHandle = nullptr; 
-	UInputComponent* InputComponent = nullptr;
+	UPhysicsHandleComponent* PhysicsHandle = nullptr;
+	FVector PlayerViewPointLocation;
+	FRotator PlayerViewPointRotation;
 
 	/// SETUP
 	void GetPhysicsHandleComponent();
 	void SetupInputComponents();
 
 	/// REG. METHODS
-	FHitResult GetFirstPhysicsBodyInReach() const;
+	FHitResult GetFirstPhysicsBodyInReach();
+	FVector GetTraceLineEnd(); /// the end of grab reach distance
+	void ShowDebugLine(FVector); /// show debug line for testing
 
 	/// ACTIONS
 	void GrabAction();

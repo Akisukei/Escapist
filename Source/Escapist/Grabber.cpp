@@ -31,21 +31,11 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	/// if physics handle is attached
 	if (PhysicsHandle->GrabbedComponent) {
-
-		FVector PlayerViewPointLocation;
-		FRotator PlayerViewPointRotation;
-
-		GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
-			OUT PlayerViewPointLocation,
-			OUT PlayerViewPointRotation
-		);
-
-		/// Draw a red trace in world to visualize grab distance
-		FVector LineTraceEnd = PlayerViewPointLocation + PlayerViewPointRotation.Vector() * GrabReach;
-		PhysicsHandle->SetTargetLocation(LineTraceEnd);
+		/// move the object we're holding
+		PhysicsHandle->SetTargetLocation(GetTraceLineEnd());
 	}
-	
 }
 
 // Get PhysicsHandleComponent (assuming only available during runtime)
@@ -61,7 +51,7 @@ void UGrabber::GetPhysicsHandleComponent() {
 // Set up InputComponent (component appears during runtime)
 void UGrabber::SetupInputComponents() {
 	
-	InputComponent = GetOwner()->FindComponentByClass<UInputComponent>();
+	UInputComponent* InputComponent = GetOwner()->FindComponentByClass<UInputComponent>();
 	if (InputComponent) 
 	{
 		InputComponent->BindAction("GrabAction", IE_Pressed, this, &UGrabber::GrabAction);
@@ -71,25 +61,10 @@ void UGrabber::SetupInputComponents() {
 }
 
 // Get the first Physics Body within pawn's reach with Ray-casting (or line tracing)
-FHitResult UGrabber::GetFirstPhysicsBodyInReach() const {
+FHitResult UGrabber::GetFirstPhysicsBodyInReach() {
 
-	FVector PlayerViewPointLocation;
-	FRotator PlayerViewPointRotation;
-
-	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
-		OUT PlayerViewPointLocation,
-		OUT PlayerViewPointRotation
-	);
-
-	/// Draw a red trace in world to visualize grab distance
-	FVector LineTraceEnd = PlayerViewPointLocation + PlayerViewPointRotation.Vector() * GrabReach;
-	/// PlayerViewPointLocation is where player is and where it starts
-	/// PlayerViewPointRotation points which angle it will come out of
-	/// GrabReach is how long in cm will the reach be
-
-	//DrawDebugLine(GetWorld(), PlayerViewPointLocation, LineTraceEnd, FColor(255, 0, 0), false, 0.f, 0.f, 10.f);
-	/// Don't want to persist line so set false so it will recreate every tick
-	/// Life time is not relevant if lines do not persist
+	FVector LineTraceEnd = GetTraceLineEnd();
+	//ShowDebugLine(LineTraceEnd);
 
 	/// Line-trace AKA Ray-casting out to reach distance
 	FHitResult Hit;
@@ -102,26 +77,46 @@ FHitResult UGrabber::GetFirstPhysicsBodyInReach() const {
 	);
 	/// Read params by hovering over
 	/// reminder :: is used to extract value from enum
-	/// InTraceComplex is visibility collision view mode, false is like player collision
+	/// InTraceComplex is like visibility collision view mode, false is like player collision
 
-	//AActor* HitActor = Hit.GetActor();
-	//if (HitActor) { UE_LOG(LogTemp, Warning, TEXT("Actor hit: %s"), *(HitActor->GetName())); }
 	return Hit;
+}
+
+// Get trace line's end location
+FVector UGrabber::GetTraceLineEnd() {
+
+	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
+		OUT PlayerViewPointLocation,
+		OUT PlayerViewPointRotation
+	);
+
+	/// PlayerViewPointLocation is where player is and where it starts
+	/// PlayerViewPointRotation is the line's angle
+	/// GrabReach is how long in cm will the reach be
+	return PlayerViewPointLocation + PlayerViewPointRotation.Vector() * GrabReach;
+}
+
+// Draw a red trace in world to visualize grab distance
+void UGrabber::ShowDebugLine(FVector LineTraceEnd) {
+
+	DrawDebugLine(GetWorld(), PlayerViewPointLocation, LineTraceEnd, FColor(255, 0, 0), false, 0.f, 0.f, 10.f);
+	/// Don't want to persist line so set false so it will recreate every tick
+	/// Life time is not relevant if lines do not persist
 }
 
 void UGrabber::GrabAction() {
 	UE_LOG(LogTemp, Warning, TEXT("Grab Pressed"));
 
 	auto HitResult = GetFirstPhysicsBodyInReach();
+	/// auto infers to its object type
 	if (HitResult.GetActor() != nullptr) 
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Actor hit: %s"), *(HitResult.GetActor()->GetName()));
-		auto ComponentToGrab = HitResult.GetComponent();
-		/// auto infers to its object type
 
+		UPrimitiveComponent* ComponentToGrab = HitResult.GetComponent();
 		PhysicsHandle->GrabComponentAtLocationWithRotation(
 			ComponentToGrab,
-			NAME_None,	// no skeletal mesh
+			NAME_None,	/// not a skeletal mesh but a static mesh
 			ComponentToGrab->GetOwner()->GetActorLocation(),
 			ComponentToGrab->GetOwner()->GetActorRotation()
 		);
