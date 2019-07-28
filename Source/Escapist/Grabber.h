@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "DrawDebugHelpers.h"
+#include "PhysicsEngine/PhysicsHandleComponent.h"
+#include "Components/InputComponent.h"
 #include "Grabber.generated.h"
 
 
@@ -29,5 +31,20 @@ private:
 
 	FVector PlayerViewPointLocation;
 	FRotator PlayerViewPointRotation;
-	float GrabReach = 100.f; // in cm
+	float GrabReach = 100.f; /// in cm
+
+	/// dont know if handle is only available at start up
+	UPhysicsHandleComponent* PhysicsHandle = nullptr; 
+	UInputComponent* InputComponent = nullptr;
+
+	/// SETUP
+	void GetPhysicsHandleComponent();
+	void SetupInputComponents();
+
+	/// REG. METHODS
+	FHitResult GetFirstPhysicsBodyInReach() const;
+
+	/// ACTIONS
+	void GrabAction();
+	void ReleaseAction();
 };
