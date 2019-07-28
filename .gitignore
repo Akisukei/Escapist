@@ -79,7 +79,8 @@ Plugins/*/Intermediate/*
 DerivedDataCache/*
 
 # Other Files
-Content/StarterContent/*
+Content/StarterContent/Textures
+Content/StarterContent/HDRI
 
 ### UnrealEngine Patch ###
 # Don't ignore icon and splash images for mobile app
