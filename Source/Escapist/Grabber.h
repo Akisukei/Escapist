@@ -30,7 +30,7 @@ public:
 private:
 
 	UPROPERTY(EditAnywhere)
-	float GrabReach = 100.f; /// in cm
+	float GrabReach = 150.f; /// in cm
 
 	UPhysicsHandleComponent* PhysicsHandle = nullptr;
 	FVector PlayerViewPointLocation;

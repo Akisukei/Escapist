@@ -34,7 +34,7 @@ private:
 
 	//UPROPERTY(VisibleAnywhere)
 	UPROPERTY(EditAnywhere)
-	float OpenAngle = 50.f;
+	float OpenAngle = -10.f;
 		
 	UPROPERTY(EditAnywhere)
 	ATriggerVolume* PressurePlate;
@@ -47,4 +47,7 @@ private:
 	AActor* Owner;
 	AActor* ActorThatOpens;
 	float DoorOpenedTime;	// time of pressure plate triggers door to open
+
+	/* METHODS */
+	float GetTotalMassOnPlate();
 };
