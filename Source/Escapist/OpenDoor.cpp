@@ -22,7 +22,7 @@ void UOpenDoor::BeginPlay()
 
 	Owner = GetOwner();
 	//ActorThatOpens = GetWorld()->GetFirstPlayerController()->GetPawn();
-	if (Owner != nullptr) Owner->SetActorRotation(FRotator(0.f, 90.f, 0.f)); // start game with closed door
+	//if (Owner != nullptr) Owner->SetActorRotation(FRotator(0.f, 90.f, 0.f)); // start game with closed door
 }
 
 // Called every frame
