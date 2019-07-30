@@ -7,6 +7,7 @@
 #include "Engine/TriggerVolume.h"
 #include "OpenDoor.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDoorEvent);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class ESCAPIST_API UOpenDoor : public UActorComponent
@@ -21,12 +22,15 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-	void OpenDoor();
-	void CloseDoor();
-
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+	UPROPERTY(BlueprintAssignable)
+	FDoorEvent OnOpenRequest;
+
+	UPROPERTY(BlueprintAssignable)
+	FDoorEvent OnCloseRequest;
 
 private:
 
@@ -34,18 +38,11 @@ private:
 
 	//UPROPERTY(VisibleAnywhere)
 	UPROPERTY(EditAnywhere)
-	float OpenAngle = -10.f;
-		
-	UPROPERTY(EditAnywhere)
 	ATriggerVolume* PressurePlate = nullptr;
 
-	UPROPERTY(EditAnywhere)
-	float DoorClosingDelay = 0.5f;
-
 	/* PRIVATE VARIABLES */
-	
 	AActor* Owner = nullptr;
-	float DoorOpenedTime;	// time of pressure plate triggers door to open
+	float MassToTrigger = 30.f;
 
 	/* METHODS */
 	float GetTotalMassOnPlate();

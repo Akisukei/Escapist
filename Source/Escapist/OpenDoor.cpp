@@ -15,7 +15,6 @@ UOpenDoor::UOpenDoor()
 	PrimaryComponentTick.bCanEverTick = true;
 }
 
-
 // Called when the game starts
 void UOpenDoor::BeginPlay()
 {
@@ -23,25 +22,26 @@ void UOpenDoor::BeginPlay()
 
 	Owner = GetOwner();
 	//ActorThatOpens = GetWorld()->GetFirstPlayerController()->GetPawn();
-	CloseDoor();
+	if (Owner != nullptr) Owner->SetActorRotation(FRotator(0.f, 90.f, 0.f)); // start game with closed door
 }
-
 
 // Called every frame
 void UOpenDoor::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (GetTotalMassOnPlate() > 30.f) // TODO change hard code
-	{
-		OpenDoor();
-		DoorOpenedTime = GetWorld()->GetTimeSeconds();
+	if (GetTotalMassOnPlate() > MassToTrigger) {
+		OnOpenRequest.Broadcast();
+		///DoorOpenedTime = GetWorld()->GetTimeSeconds();
+	}
+	else {
+		OnCloseRequest.Broadcast();
 	}
 
-	if (GetWorld()->GetTimeSeconds() - DoorOpenedTime > DoorClosingDelay) 
+	/*if (GetWorld()->GetTimeSeconds() - DoorOpenedTime > DoorClosingDelay) 
 	{
 		CloseDoor();
-	}
+	}*/
 }
 
 // Get the total mass in kg of actors on the pressure plate
@@ -55,22 +55,10 @@ float UOpenDoor::GetTotalMassOnPlate() {
 		PressurePlate->GetOverlappingActors(OUT OverlappingActors);
 		for (const auto* Actor : OverlappingActors)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("%s on pressure plate"), *Actor->GetName());
+			///UE_LOG(LogTemp, Warning, TEXT("%s on pressure plate"), *Actor->GetName());
 			TotalMassInKg += Actor->FindComponentByClass<UPrimitiveComponent>()->GetMass();
 		}
 	}
 
 	return TotalMassInKg;
-}
-
-// Opens the door
-void UOpenDoor::OpenDoor()
-{
-	if(Owner != nullptr) Owner->SetActorRotation(FRotator(0.f,OpenAngle, 0.f));
-}
-
-// Closes the door
-void UOpenDoor::CloseDoor()
-{
-	if (Owner != nullptr) Owner->SetActorRotation(FRotator(0.f, 90.f, 0.f));
 }
