@@ -6,15 +6,16 @@
 #include "GameFramework/PlayerController.h"
 #include "Components/PrimitiveComponent.h"
 
-/// indicates parameter will be modified for us
+// indicates parameter will be modified for us
 #define OUT
+// nullptr log error macro
+#define NULLPTR_LOG(ptr) UE_LOG(LogTemp, Error, TEXT("%s%s"), TEXT(#ptr), TEXT(" is nullptr"))
 
 // Sets default values for this component's properties
 UGrabber::UGrabber()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 }
-
 
 // Called when the game starts
 void UGrabber::BeginPlay()
@@ -32,7 +33,7 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	/// if physics handle is attached
-	if (PhysicsHandle->GrabbedComponent) {
+	if (PhysicsHandle != nullptr && PhysicsHandle->GrabbedComponent) {
 		/// move the object we're holding
 		PhysicsHandle->SetTargetLocation(GetTraceLineEnd());
 	}
@@ -109,7 +110,7 @@ void UGrabber::GrabAction() {
 
 	auto HitResult = GetFirstPhysicsBodyInReach();
 	/// auto infers to its object type
-	if (HitResult.GetActor() != nullptr) 
+	if (HitResult.GetActor() != nullptr && PhysicsHandle != nullptr) 
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Actor hit: %s"), *(HitResult.GetActor()->GetName()));
 
@@ -126,6 +127,6 @@ void UGrabber::GrabAction() {
 void UGrabber::ReleaseAction() {
 	UE_LOG(LogTemp, Warning, TEXT("Grab Released"));
 
-	PhysicsHandle->ReleaseComponent();
+	if(PhysicsHandle != nullptr) PhysicsHandle->ReleaseComponent();
 }
 

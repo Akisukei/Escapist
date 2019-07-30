@@ -7,6 +7,8 @@
 #include "GameFramework/PlayerController.h"
 #include "Components/PrimitiveComponent.h"
 
+#define OUT
+
 // Sets default values for this component's properties
 UOpenDoor::UOpenDoor()
 {
@@ -19,11 +21,8 @@ void UOpenDoor::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// Init variables
 	Owner = GetOwner();
 	//ActorThatOpens = GetWorld()->GetFirstPlayerController()->GetPawn();
-
-	// Close door properly
 	CloseDoor();
 }
 
@@ -51,25 +50,27 @@ float UOpenDoor::GetTotalMassOnPlate() {
 	float TotalMassInKg = 0.f;
 	TArray<AActor*> OverlappingActors;
 
-	PressurePlate->GetOverlappingActors(OverlappingActors);
-	for (const auto* Actor : OverlappingActors) 
+	if (PressurePlate != nullptr) 
 	{
-		UE_LOG(LogTemp, Warning, TEXT("%s on pressure plate"), *Actor->GetName());
-		TotalMassInKg += Actor->FindComponentByClass<UPrimitiveComponent>()->GetMass();
+		PressurePlate->GetOverlappingActors(OUT OverlappingActors);
+		for (const auto* Actor : OverlappingActors)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("%s on pressure plate"), *Actor->GetName());
+			TotalMassInKg += Actor->FindComponentByClass<UPrimitiveComponent>()->GetMass();
+		}
 	}
 
 	return TotalMassInKg;
 }
 
-
 // Opens the door
 void UOpenDoor::OpenDoor()
 {
-	Owner->SetActorRotation(FRotator(0.f,OpenAngle, 0.f));
+	if(Owner != nullptr) Owner->SetActorRotation(FRotator(0.f,OpenAngle, 0.f));
 }
 
 // Closes the door
 void UOpenDoor::CloseDoor()
 {
-	Owner->SetActorRotation(FRotator(0.f, 90.f, 0.f));
+	if (Owner != nullptr) Owner->SetActorRotation(FRotator(0.f, 90.f, 0.f));
 }
